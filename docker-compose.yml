@@ -1,0 +1,74 @@
+# Define la versión de la configuración de Docker Compose.
+version: "2.6.5"
+
+# Configura los servicios que se ejecutarán.
+services:
+  
+  # Configura el servicio para Nginx.
+  nginx:
+    # Especifica cómo construir el servicio, usando el archivo Dockerfile en el contexto actual.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Mapea el puerto 80 del host al puerto 80 del contenedor.
+    ports:
+      - 80:80
+    # Vincula la carpeta local "src" al directorio "/var/www/html/public" en el contenedor.
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+    - mysql
+    - php
+
+  # Configura el servicio para MySQL usando la imagen "mariadb:latest".
+  mysql:
+    image: mariadb:latest
+    # Mapea el puerto 3306 del host al puerto 3306 del contenedor.
+    ports:
+      - 3307:3306
+    # Configura las variables de entorno para la base de datos MySQL.
+    environment:
+      - MYSQL_DATABASE=laravel
+      - MYSQL_USER=laravel
+      - MYSQL_PASSWORD=secret
+      - MYSQL_ROOT_PASSWORD=secret
+    # Vincula la carpeta local "mysql" al directorio "/var/lib/mysql" en el contenedor.
+    volumes:
+      - ./mysql:/var/lib/mysql
+
+  php:
+    build:
+      context: .
+      dockerfile: php.dockerfile
+    volumes:
+      - ./src/:/var/www/html
+
+
+  composer:
+    build:
+      context: .
+      dockerfile: composer.dockerfile
+    volumes:
+      - ./src/:/var/www/html/
+    working_dir: /var/www/html/
+
+  npm:
+    image: node:current-alpine
+    volumes:
+      - ./src:/var/www/html
+    entrypoint: ["npm"]
+    working_dir: /var/www/html
+
+  artisan:
+    build:
+      context: .
+      dockerfile: php.dockerfile
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - mysql
+    entrypoint: ["php", "/var/www/html/artisan"]
+
+
+
+
