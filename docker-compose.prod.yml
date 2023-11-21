@@ -20,26 +20,24 @@ services:
     restart: always
   
   npm:
-    image: node:current-alpine
+    image: node:latest
     volumes:
       - ./src:/var/www/html
     entrypoint: ["/bin/sh", "-c", "npm install && npm run build"]
     working_dir: /var/www/html
 
   artisan:
-    build:
-      context: .
-      dockerfile: php.prod.dockerfile
+    volumes:
+      - ./src:/var/www/html
+    entrypoint: ["/bin/sh", "-c", "php artisan optimize", "php artisan view:cache", "php artisan event:cache"]
+    working_dir: /var/www/html
     depends_on:
       - mysql
       - npm
-    command: sh -c "php artisan optimize && php artisan view:cache && php artisan event:cache"
 
   composer:
-    build:
-      context: .
-      dockerfile: php.prod.dockerfile
-    depends_on:
-      - mysql
-      - npm
-    command: sh -c "composer install --optimize-autoloader --no-dev"
+    image: node:current-alpine
+    volumes:
+      - ./src:/var/www/html
+    entrypoint: ["/bin/sh", "-c", "composer install --optimize-autoloader --no-dev"]
+    working_dir: /var/www/html
