@@ -12,6 +12,8 @@ services:
       - mysql
       - php
       - npm
+      - composer
+      - artisan
     restart: always
   php:
     build:
@@ -29,11 +31,10 @@ services:
   artisan:
     volumes:
       - ./src:/var/www/html
-    entrypoint: ["/bin/sh", "-c", "php artisan optimize", "php artisan view:cache", "php artisan event:cache"]
+    entrypoint: ["/bin/sh", "-c", "php artisan optimize && php artisan view:cache && php artisan event:cache"]
     working_dir: /var/www/html
     depends_on:
       - mysql
-      - npm
 
   composer:
     image: node:current-alpine
