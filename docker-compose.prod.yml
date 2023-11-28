@@ -29,16 +29,11 @@ services:
     working_dir: /var/www/html
 
   artisan:
-    volumes:
-      - ./src:/var/www/html
     entrypoint: ["/bin/sh", "-c", "php artisan optimize && php artisan view:cache && php artisan event:cache"]
     working_dir: /var/www/html
     depends_on:
       - mysql
 
   composer:
-    image: node:current-alpine
-    volumes:
-      - ./src:/var/www/html
     entrypoint: ["/bin/sh", "-c", "composer install --optimize-autoloader --no-dev"]
     working_dir: /var/www/html
